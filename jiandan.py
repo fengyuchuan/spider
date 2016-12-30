@@ -8,7 +8,7 @@ class jiandan(HttpClient):
     def __init__(self):
         self._Url = "http://jandan.net/ooxx/"
         self._pageIndex = "0"
-        self._dir = "D:\img"
+        self._dir = r"D:\img\jiandan"
 
     def _getNewPage(self):
         relurl = self._Url + "page-" +self._pageIndex + "#comments"
@@ -36,9 +36,12 @@ class jiandan(HttpClient):
             if not isExists:
                 os.mkdir(pageFolder)
             os.chdir(pageFolder)
-            with open(filename,'wb') as file:
-                img = self.Get(DownUrl)
-                file.write(img)
+            isExists = os.path.exists(filename)
+            if not isExists:
+                print "no exist"
+                with open(filename,'wb') as file:
+                    img = self.Get(DownUrl)
+                    file.write(img)
 
 
     def _start(self, number):
@@ -49,4 +52,4 @@ class jiandan(HttpClient):
             self._savePic(img_add,self._dir,i)
 
 jd = jiandan()
-jd._start(2)
+jd._start(10)
