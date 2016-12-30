@@ -1,29 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import cookielib, urllib, urllib2, socket
-import zlib
-
-def GetZip(self, url, refer=None):
-    try:
-      req = urllib2.Request(url)
-      req.add_header('Accept-encoding', 'gzip')#默认以gzip压缩的方式得到网页内容
-      if not (refer is None):
-        req.add_header('Referer', refer)
-      response = urllib2.urlopen(req, timeout=120)
-      html = response.read()
-      gzipped = response.headers.get('Content-Encoding')#查看是否服务器是否支持gzip
-      if gzipped:
-          html = zlib.decompress(html, 16+zlib.MAX_WBITS)#解压缩，得到网页源码
-      return html
-    except urllib2.HTTPError, e:
-      return e.read()
-    except socket.timeout, e:
-      return ''
-    except socket.error, e:
-      return ''
-
+import zlib,StringIO
 class HttpClient:
   __cookie = cookielib.CookieJar()
+  #__proxy_handler = urllib2.ProxyHandler({"http" : '42.121.6.80:8080'})
+  #__req = urllib2.build_opener(urllib2.HTTPCookieProcessor(__cookie),__proxy_handler)
   __req = urllib2.build_opener(urllib2.HTTPCookieProcessor(__cookie))
   __req.addheaders = [
     ('Accept', 'application/javascript, */*;q=0.8'),
@@ -34,9 +15,15 @@ class HttpClient:
   def Get(self, url, refer=None):
     try:
       req = urllib2.Request(url)
+      req.add_header('Accept-encoding', 'gzip')
       if not (refer is None):
         req.add_header('Referer', refer)
-      return urllib2.urlopen(req, timeout=120).read()
+      response = urllib2.urlopen(req, timeout=120)
+      html = response.read()
+      gzipped = response.headers.get('Content-Encoding')
+      if gzipped:
+          html = zlib.decompress(html, 16+zlib.MAX_WBITS)
+      return html
     except urllib2.HTTPError, e:
       return e.read()
     except socket.timeout, e:
@@ -46,7 +33,7 @@ class HttpClient:
 
   def Post(self, url, data, refer=None):
     try:
-      req = urllib2.Request(url, urllib.urlencode(data))
+      req = urllib2.Request(url,data)
       if not (refer is None):
         req.add_header('Referer', refer)
       return urllib2.urlopen(req, timeout=120).read()
@@ -61,6 +48,7 @@ class HttpClient:
     output = open(file, 'wb')
     output.write(urllib2.urlopen(url).read())
     output.close()
+
 
   def getCookie(self, key):
     for c in self.__cookie:
